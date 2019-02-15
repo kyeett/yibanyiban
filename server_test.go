@@ -1,8 +1,13 @@
 package main
 
-import "testing"
+import (
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+)
 
-func Test_validateIBAN(t *testing.T) {
+func TestValidateIBAN(t *testing.T) {
 	tcs := []struct {
 		IBAN     string
 		expected bool
@@ -19,7 +24,7 @@ func Test_validateIBAN(t *testing.T) {
 		}
 	}
 }
-func Test_invalidIBANError(t *testing.T) {
+func TestInvalidIBANError(t *testing.T) {
 	tcs := []struct {
 		IBAN        string
 		expectedErr error
@@ -42,6 +47,36 @@ func Test_invalidIBANError(t *testing.T) {
 			t.Errorf("expected error %q from validateIBAN(%q), got %q", tc.expectedErr, tc.IBAN, err)
 		}
 	}
+}
+
+func TestIBANHandler(t *testing.T) {
+	tcs := []struct {
+		name string
+		path string
+	}{
+		{"", "validate?iban=GB82WEST12345698765432"},
+		{"", "validate?iban=AL85751639367318444714198669"},
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.name, func(t *testing.T) {
+			req, err := http.NewRequest("GET", "localhost:8080/"+tc.path, nil)
+			if err != nil {
+				t.Fatalf("failed to create http request, %v", err)
+			}
+			rec := httptest.NewRecorder()
+
+			validateIBANHandler(rec, req)
+			res := rec.Result()
+			defer res.Body.Close()
+
+			b, err := ioutil.ReadAll(res.Body)
+			if err != nil {
+				t.Fatalf("failed to read response, %v", err)
+			}
+		})
+	}
+
 }
 
 // Test iban?

@@ -10,8 +10,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-
-	"github.com/pariz/gountries"
+	"time"
 )
 
 //https://en.wikipedia.org/wiki/International_Bank_Account_Number#Validating_the_IBAN
@@ -39,13 +38,6 @@ func validateIBAN(code string) (bool, error) {
 	}
 
 	code = strings.ToUpper(code)
-
-	// Validate country coude
-	query := gountries.New()
-	_, err := query.FindCountryByAlpha(code[:2])
-	if err != nil {
-		return false, errCountryCodeInvalid
-	}
 
 	// Check for non-alpha numerics or space
 	if !validChars.Match([]byte(code)) {
@@ -86,6 +78,7 @@ type ValidationResponse struct {
 }
 
 func validateIBANHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
 	if r.Method != http.MethodGet {
 		http.Error(w, fmt.Sprintf("method %s not allowed", r.Method), http.StatusMethodNotAllowed)
 		return
@@ -124,7 +117,12 @@ func validateIBANHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	http.HandleFunc("/", validateIBANHandler)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	srv := http.Server{
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		Addr:         ":8080",
+	}
+	log.Fatal(srv.ListenAndServe())
 
 	// country code using ISO 3166-1 alpha-2 – two letters,
 	// check digits – two digits, and
