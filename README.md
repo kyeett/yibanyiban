@@ -36,7 +36,7 @@ curl localhost:8080/validate?iban=AL86751639367318444714198669
 - [x] Basic webserver
 - [x] Webserver with timeouts
 - [x] Makefile for ~~build~~, ~~test~~ and ~~load~~ test
-- [ ] Additional IBAN numbers for testing
+- [x] Additional IBAN numbers for testing
 - [x] Additional examples
 - [ ] Clean up code
 - [ ] Clean up README
