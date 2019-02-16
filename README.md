@@ -35,13 +35,13 @@ curl localhost:8080/validate?iban=AL86751639367318444714198669
 - [x] Function to validate an IBAN
 - [x] Basic webserver
 - [x] Webserver with timeouts
-- [ ] Makefile for ~~build~~, ~~test~~ and load test
+- [x] Makefile for ~~build~~, ~~test~~ and ~~load~~ test
 - [ ] Additional IBAN numbers for testing
 - [x] Additional examples
 - [ ] Clean up code
 - [ ] Clean up README
 - [ ] Move main package to cmd
-- [ ] Flag to set port
+- [x] Flag to set port
 
 ## Lessons learned
 

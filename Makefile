@@ -1,5 +1,5 @@
-
 BINARY_NAME=yibanserver
+SERVER_PORT?=8080
 
 all: test build
 build:
@@ -14,4 +14,4 @@ clean:
 	@go clean
 	rm -f $(BINARY_NAME)
 run:
-	@go run server.go
+	@go run server.go -port $(SERVER_PORT)

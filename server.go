@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"flag"
 	"fmt"
 	"log"
 	"math/big"
@@ -115,16 +116,17 @@ func validateIBANHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/", validateIBANHandler)
+	portFlag := flag.String("port", "8080", "Port number for server")
+	flag.Parse()
+
 	srv := http.Server{
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
-		Addr:         ":8080",
+		Addr:         ":" + *portFlag,
 	}
-	log.Fatal(srv.ListenAndServe())
 
-	// country code using ISO 3166-1 alpha-2 – two letters,
-	// check digits – two digits, and
-	// Basic Bank Account Number (BBAN) – up to 30 alphanumeric characters that are country-specific.[1]
-	// THe api converts upp
+	http.HandleFunc("/validate", validateIBANHandler)
+
+	fmt.Printf("Serving IBAN validation service on :%s\n", *portFlag)
+	log.Fatal(srv.ListenAndServe())
 }
