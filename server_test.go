@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -35,7 +34,6 @@ func TestInvalidIBANError(t *testing.T) {
 		{"SE120312301023012301203012301230120301230210300123010230", errNumberTooLong},
 		{"GB82WEST12345698765432&", errInvalidCharacters},
 		{"GB82WEST12345698765432*", errInvalidCharacters},
-		{"XX82WEST12345698765432", errCountryCodeInvalid},
 		{"GB83WEST12345698765432", errCheckSumIncorrect},
 		{"AL85751639367318444714198669", errCheckSumIncorrect},
 		{"GB82WEST12345698765432", nil},
@@ -49,35 +47,32 @@ func TestInvalidIBANError(t *testing.T) {
 	}
 }
 
+// Test the HTTP status codes from the IBANHandler
 func TestIBANHandler(t *testing.T) {
 	tcs := []struct {
-		name string
-		path string
+		name               string
+		method             string
+		path               string
+		expectedStatusCode int
 	}{
-		{"", "validate?iban=GB82WEST12345698765432"},
-		{"", "validate?iban=AL85751639367318444714198669"},
+		{"ok #1", "GET", "validate?iban=GB82WEST12345698765432", http.StatusOK},
+		{"ok #2", "GET", "validate?iban=AL85751639367318444714198669", http.StatusOK},
+		{"invalid method", "POST", "validate?iban=AL85751639367318444714198669", http.StatusMethodNotAllowed},
+		{"missing parameter iban", "GET", "validate?lolban=AL85751639367318444714198669", http.StatusForbidden},
 	}
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
-			req, err := http.NewRequest("GET", "localhost:8080/"+tc.path, nil)
-			if err != nil {
-				t.Fatalf("failed to create http request, %v", err)
-			}
+			req := httptest.NewRequest(tc.method, "localhost:8080/"+tc.path, nil)
 			rec := httptest.NewRecorder()
 
 			validateIBANHandler(rec, req)
 			res := rec.Result()
-			defer res.Body.Close()
 
-			b, err := ioutil.ReadAll(res.Body)
-			if err != nil {
-				t.Fatalf("failed to read response, %v", err)
+			if res.StatusCode != tc.expectedStatusCode {
+				t.Fatalf("expected '%s', got '%s'\n", http.StatusText(tc.expectedStatusCode), http.StatusText(res.StatusCode))
 			}
 		})
 	}
 
 }
-
-// Test iban?
-// Test iban

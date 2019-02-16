@@ -18,11 +18,10 @@ import (
 //https://www.mobilefish.com/download/iban/random_generated_iban.txt
 
 var (
-	errCountryCodeInvalid = errors.New("country code invalid")
-	errCheckSumIncorrect  = errors.New("checksum is incorrect")
-	errNumberTooShort     = errors.New("IBAN is too short, expected > 4")
-	errNumberTooLong      = errors.New("IBAN is too long, expected < 34")
-	errInvalidCharacters  = errors.New("Invalid characters, allowed are alphanumeric (A-Z, 0-9) and space (' ')")
+	errCheckSumIncorrect = errors.New("checksum is incorrect")
+	errNumberTooShort    = errors.New("IBAN is too short, expected > 4")
+	errNumberTooLong     = errors.New("IBAN is too long, expected < 34")
+	errInvalidCharacters = errors.New("Invalid characters, allowed are alphanumeric (A-Z, 0-9) and space (' ')")
 )
 
 var validChars = regexp.MustCompile("^[A-Z0-9 ]*$")
@@ -78,11 +77,11 @@ type ValidationResponse struct {
 }
 
 func validateIBANHandler(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
 	if r.Method != http.MethodGet {
 		http.Error(w, fmt.Sprintf("method %s not allowed", r.Method), http.StatusMethodNotAllowed)
 		return
 	}
+	defer r.Body.Close()
 
 	IBAN, ok := r.URL.Query()["iban"]
 	if !ok {
