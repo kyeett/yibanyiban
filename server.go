@@ -1,22 +1,15 @@
-package main
+package yibanyiban
 
 import (
 	"encoding/json"
 	"errors"
-	"flag"
 	"fmt"
-	"log"
 	"math/big"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 )
-
-//https://en.wikipedia.org/wiki/International_Bank_Account_Number#Validating_the_IBAN
-
-//https://www.mobilefish.com/download/iban/random_generated_iban.txt
 
 var (
 	errCheckSumIncorrect = errors.New("checksum is incorrect")
@@ -28,12 +21,17 @@ var (
 var validChars = regexp.MustCompile("^[A-Z0-9 ]*$")
 var mod97 = big.NewInt(97)
 
+const (
+	minIBANLength = 4  // For a theoretical country with a single account
+	maxIBANLength = 34 // From https://en.wikipedia.org/wiki/International_Bank_Account_Number
+)
+
 func validateIBAN(code string) (bool, error) {
-	if len(code) < 4 {
+	if len(code) < minIBANLength {
 		return false, errNumberTooShort
 	}
 
-	if len(code) > 34 {
+	if len(code) > maxIBANLength {
 		return false, errNumberTooLong
 	}
 
@@ -71,13 +69,15 @@ func validateIBAN(code string) (bool, error) {
 	return true, nil
 }
 
-type ValidationResponse struct {
+type validationResponse struct {
 	IBAN    string `json:"iban"`
 	Valid   bool   `json:"valid"`
 	Message string `json:"message"`
 }
 
-func validateIBANHandler(w http.ResponseWriter, r *http.Request) {
+// ValidateIBANHandler to validate an IBAN number (https://en.wikipedia.org/wiki/International_Bank_Account_Number)
+// sent in GET-parameter iban=<...> of the request
+func ValidateIBANHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, fmt.Sprintf("method %s not allowed", r.Method), http.StatusMethodNotAllowed)
 		return
@@ -101,7 +101,7 @@ func validateIBANHandler(w http.ResponseWriter, r *http.Request) {
 		message = err.Error()
 	}
 
-	j, err := json.Marshal(ValidationResponse{
+	j, err := json.Marshal(validationResponse{
 		IBAN:    IBAN[0],
 		Valid:   valid,
 		Message: message,
@@ -113,20 +113,4 @@ func validateIBANHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(j)
-}
-
-func main() {
-	portFlag := flag.String("port", "8080", "Port number for server")
-	flag.Parse()
-
-	srv := http.Server{
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		Addr:         ":" + *portFlag,
-	}
-
-	http.HandleFunc("/validate", validateIBANHandler)
-
-	fmt.Printf("Serving IBAN validation service on :%s\n", *portFlag)
-	log.Fatal(srv.ListenAndServe())
 }

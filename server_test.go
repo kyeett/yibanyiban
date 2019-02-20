@@ -1,4 +1,4 @@
-package main
+package yibanyiban
 
 import (
 	"net/http"
@@ -25,7 +25,7 @@ func TestIBANHandler(t *testing.T) {
 			req := httptest.NewRequest(tc.method, "localhost:8080/"+tc.path, nil)
 			rec := httptest.NewRecorder()
 
-			validateIBANHandler(rec, req)
+			ValidateIBANHandler(rec, req)
 			res := rec.Result()
 
 			if res.StatusCode != tc.expectedStatusCode {
