@@ -1,5 +1,4 @@
-<div style="font-weight: bold; font-size:42px; border:10px solid black; padding:5px 10px;display: inline-block">一半<br>一半</div>
-<hr>
+# 一半<br>一半
 
 一半一半 (pronounced _i-ban i-ban_) is a simple webserver with a REST API that validates an [International Bank Account Number (IBAN)](https://sv.wikipedia.org/wiki/International_Bank_Account_Number). It has a single endpoint `/validate`
 
@@ -56,7 +55,9 @@ Serving IBAN validation service on :8080
 ## Load test results
 
 Running load test with 2000 of concurrent clients
+
 `QPS` = Queries per second
+
 | Target QPS | Actual QPS   | Total requests | Errors |
 | ---------- | ------------ | -------------- | ------ |
 | 1000       | 999.936652   | 30009          | 0      |
